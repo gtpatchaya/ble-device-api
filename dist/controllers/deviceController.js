@@ -83,7 +83,7 @@ const addMultipleDataRecords = (req, res, next) => __awaiter(void 0, void 0, voi
                 timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
                 value: record.value,
                 unit: record.unit.toString(),
-                recordNo: record.recordNo.toString(),
+                recordNo: record.recordNo,
             })),
         });
         res.status(200).json((0, response_1.successResponse)(200, createdRecords.count ? 'Records added successfully' : 'No record added', createdRecords.count));

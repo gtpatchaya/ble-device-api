@@ -14,7 +14,7 @@ interface AddDataRecordBody {
   timestamp: string;
   value: number;
   unit: string;
-  recordNo: string;
+  recordNo: number;
 }
 
 interface SerialNumberParams {
@@ -102,7 +102,7 @@ export const addMultipleDataRecords = async (req: Request, res: Response, next: 
       timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
       value: record.value,
       unit: record.unit.toString(),
-      recordNo: record.recordNo.toString(),
+      recordNo: record.recordNo,
       })),
     });
     

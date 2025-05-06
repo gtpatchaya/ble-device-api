@@ -1,6 +1,7 @@
 การ deploy
 - สร้างฐานข้อมูลชื่อ "ble"
 - เวลาที่ deploy ให้ build ที local เเล้วค่อยเอาขึ้นไป ที่ server , pull and deploy
+- ตอนเปลี่ยน model จะต้อง sudo npx prisma generate เพื่อ update model
 
 -- สร้างตาราง Device
 CREATE TABLE Device (
