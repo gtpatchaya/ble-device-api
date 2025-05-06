@@ -102,7 +102,7 @@ export const addMultipleDataRecords = async (req: Request, res: Response, next: 
       timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
       value: record.value,
       unit: record.unit.toString(),
-      recordNumber: record.recordNo,
+      recordNumber: record.recordNumber,
       })),
     });
     
