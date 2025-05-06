@@ -18,11 +18,11 @@ model Device {
 }
 
 model DataRecord {
-  id        Int      @id @default(autoincrement())
-  device    Device   @relation(fields: [deviceId], references: [id])
-  deviceId  Int
-  timestamp DateTime
-  value     Float
-  unit      String
-  recordNo  Int
+  id           Int      @id @default(autoincrement())
+  device       Device   @relation(fields: [deviceId], references: [id])
+  deviceId     Int
+  timestamp    DateTime
+  value        Float
+  unit         String
+  recordNumber Int
 }

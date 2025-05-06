@@ -49,7 +49,7 @@ exports.registerDevice = registerDevice;
  */
 const addDataRecord = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { serialNumber, timestamp, value, unit, recordNo } = req.body;
+        const { serialNumber, timestamp, value, unit, recordNumber } = req.body;
         const device = yield prismaClient_1.default.device.findUnique({ where: { serialNumber } });
         if (!device) {
             res.status(404).json((0, response_1.successResponse)(404, 'Device not found', null));
@@ -61,7 +61,7 @@ const addDataRecord = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                 timestamp: new Date(timestamp),
                 value,
                 unit,
-                recordNo
+                recordNumber
             },
         });
         res.status(201).json((0, response_1.successResponse)(201, 'Record added successfully', record));
@@ -83,7 +83,7 @@ const addMultipleDataRecords = (req, res, next) => __awaiter(void 0, void 0, voi
                 timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
                 value: record.value,
                 unit: record.unit.toString(),
-                recordNo: record.recordNo,
+                recordNumber: record.recordNo,
             })),
         });
         res.status(200).json((0, response_1.successResponse)(200, createdRecords.count ? 'Records added successfully' : 'No record added', createdRecords.count));

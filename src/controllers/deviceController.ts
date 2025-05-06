@@ -14,7 +14,7 @@ interface AddDataRecordBody {
   timestamp: string;
   value: number;
   unit: string;
-  recordNo: number;
+  recordNumber: number;
 }
 
 interface SerialNumberParams {
@@ -65,7 +65,7 @@ export const addDataRecord = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { serialNumber, timestamp, value, unit, recordNo } = req.body;
+    const { serialNumber, timestamp, value, unit, recordNumber } = req.body;
 
     const device = await prisma.device.findUnique({ where: { serialNumber } });
     if (!device) {
@@ -79,7 +79,7 @@ export const addDataRecord = async (
           timestamp: new Date(timestamp),
           value,
           unit,
-          recordNo
+          recordNumber
         },
       
     });
@@ -102,7 +102,7 @@ export const addMultipleDataRecords = async (req: Request, res: Response, next: 
       timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
       value: record.value,
       unit: record.unit.toString(),
-      recordNo: record.recordNo,
+      recordNumber: record.recordNo,
       })),
     });
     
