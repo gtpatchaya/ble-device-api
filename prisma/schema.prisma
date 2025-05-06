@@ -1,0 +1,28 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Device {
+  id           Int          @id @default(autoincrement())
+  serialNumber String       @unique
+  model        String
+  registeredAt DateTime     @default(now())
+  isActive     Boolean      @default(true)
+  dataRecords  DataRecord[]
+}
+
+model DataRecord {
+  id        Int      @id @default(autoincrement())
+  device    Device   @relation(fields: [deviceId], references: [id])
+  deviceId  Int
+  timestamp DateTime
+  value     Float
+  unit      String
+  recordNo  String
+}

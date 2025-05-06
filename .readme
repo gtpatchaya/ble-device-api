@@ -1,0 +1,19 @@
+-- สร้างตาราง Device
+CREATE TABLE Device (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  serialNumber VARCHAR(255) NOT NULL UNIQUE,
+  model VARCHAR(255) NOT NULL,
+  registeredAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  isActive BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- สร้างตาราง DataRecord
+CREATE TABLE DataRecord (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  deviceId INT NOT NULL,
+  timestamp DATETIME NOT NULL,
+  value FLOAT NOT NULL,
+  unit VARCHAR(50) NOT NULL,
+  recordNo INT NOT NULL,
+  CONSTRAINT fk_device FOREIGN KEY (deviceId) REFERENCES Device(id)
+);
