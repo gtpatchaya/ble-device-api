@@ -98,11 +98,11 @@ export const addMultipleDataRecords = async (req: Request, res: Response, next: 
 
     const createdRecords = await prisma.dataRecord.createMany({
       data: records.map((record: any) => ({
-        deviceId: device?.id,
-        timestamp: new Date(record.timestamp),
-        value: record.value,
-        unit: record.unit,
-        recordNo: record.recordNo,
+      deviceId: device?.id,
+      timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
+      value: record.value,
+      unit: record.unit.toString(),
+      recordNo: record.recordNo.toString(),
       })),
     });
     

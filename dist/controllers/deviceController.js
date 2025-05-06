@@ -80,10 +80,10 @@ const addMultipleDataRecords = (req, res, next) => __awaiter(void 0, void 0, voi
         const createdRecords = yield prismaClient_1.default.dataRecord.createMany({
             data: records.map((record) => ({
                 deviceId: device === null || device === void 0 ? void 0 : device.id,
-                timestamp: new Date(record.timestamp),
+                timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
                 value: record.value,
-                unit: record.unit,
-                recordNo: record.recordNo,
+                unit: record.unit.toString(),
+                recordNo: record.recordNo.toString(),
             })),
         });
         res.status(200).json((0, response_1.successResponse)(200, createdRecords.count ? 'Records added successfully' : 'No record added', createdRecords.count));
