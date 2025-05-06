@@ -14,6 +14,7 @@ interface AddDataRecordBody {
   timestamp: string;
   value: number;
   unit: string;
+  recordNo: string;
 }
 
 interface SerialNumberParams {
@@ -64,7 +65,7 @@ export const addDataRecord = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { serialNumber, timestamp, value, unit } = req.body;
+    const { serialNumber, timestamp, value, unit, recordNo } = req.body;
 
     const device = await prisma.device.findUnique({ where: { serialNumber } });
     if (!device) {
@@ -73,12 +74,14 @@ export const addDataRecord = async (
     }
 
     const record = await prisma.dataRecord.create({
-      data: {
-        deviceId: device.id,
-        timestamp: new Date(timestamp),
-        value,
-        unit,
-      },
+        data: {
+          deviceId: device.id,
+          timestamp: new Date(timestamp),
+          value,
+          unit,
+          recordNo
+        },
+      
     });
 
     res.status(201).json(successResponse(201, 'Record added successfully', record));

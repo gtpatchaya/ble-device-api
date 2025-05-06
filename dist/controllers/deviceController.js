@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLastedDeviceRecords = exports.getDeviceRecords = exports.deleteDevice = exports.getDevices = exports.addDataRecord = exports.registerDevice = void 0;
+exports.getLastedDeviceRecords = exports.getDeviceRecords = exports.deleteDevice = exports.getDevices = exports.addMultipleDataRecords = exports.addDataRecord = exports.registerDevice = void 0;
 const prismaClient_1 = __importDefault(require("../prismaClient"));
 const response_1 = require("../utils/response");
 // --------------------------------------------
@@ -49,7 +49,7 @@ exports.registerDevice = registerDevice;
  */
 const addDataRecord = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { serialNumber, timestamp, value, unit } = req.body;
+        const { serialNumber, timestamp, value, unit, recordNo } = req.body;
         const device = yield prismaClient_1.default.device.findUnique({ where: { serialNumber } });
         if (!device) {
             res.status(404).json((0, response_1.successResponse)(404, 'Device not found', null));
@@ -61,6 +61,7 @@ const addDataRecord = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                 timestamp: new Date(timestamp),
                 value,
                 unit,
+                recordNo
             },
         });
         res.status(201).json((0, response_1.successResponse)(201, 'Record added successfully', record));
@@ -70,6 +71,28 @@ const addDataRecord = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.addDataRecord = addDataRecord;
+const addMultipleDataRecords = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { serialNumber, records } = req.body;
+    try {
+        const device = yield prismaClient_1.default.device.findUnique({ where: { serialNumber } });
+        if (!device)
+            res.status(404).json({ message: 'Device not found' });
+        const createdRecords = yield prismaClient_1.default.dataRecord.createMany({
+            data: records.map((record) => ({
+                deviceId: device === null || device === void 0 ? void 0 : device.id,
+                timestamp: new Date(record.timestamp),
+                value: record.value,
+                unit: record.unit,
+                recordNo: record.recordNo,
+            })),
+        });
+        res.status(200).json((0, response_1.successResponse)(200, createdRecords.count ? 'Records added successfully' : 'No record added', createdRecords.count));
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.addMultipleDataRecords = addMultipleDataRecords;
 // --------------------------------------------
 // 3. GET DEVICES WITH PAGINATION
 // --------------------------------------------

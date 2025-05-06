@@ -9,4 +9,5 @@ router.get('/devices', deviceController_1.getDevices);
 router.get('/devices/:serialNumber/records', deviceController_1.getDeviceRecords);
 router.get('/devices/:serialNumber/lastedRecord', deviceController_1.getLastedDeviceRecords);
 router.delete('/devices/:serialNumber', deviceController_1.deleteDevice);
+router.post('/devices/data/bulk', deviceController_1.addMultipleDataRecords);
 exports.default = router;
