@@ -174,6 +174,7 @@ const getDeviceRecords = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         res.status(200).json((0, response_1.successResponse)(200, 'Success', device.dataRecords));
     }
     catch (error) {
+        res.status(404).json((0, response_1.successResponse)(404, 'Internal xx Error', error));
         next(error);
     }
 });

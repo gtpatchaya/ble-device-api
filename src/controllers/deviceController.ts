@@ -217,6 +217,7 @@ export const getDeviceRecords = async (
 
     res.status(200).json(successResponse(200, 'Success', device.dataRecords));
   } catch (error) {
+    res.status(404).json(successResponse(404, 'Internal xx Error', error));
     next(error);
   }
 };
