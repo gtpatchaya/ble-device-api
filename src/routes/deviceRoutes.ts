@@ -5,7 +5,8 @@ import {
   getDeviceRecords,
   getDevices,
   getLastedDeviceRecords,
-  registerDevice
+  registerDevice,
+  addMultipleDataRecords
 } from '../controllers/deviceController';
 
 const router = Router();
@@ -16,5 +17,6 @@ router.get('/devices', getDevices);
 router.get('/devices/:serialNumber/records', getDeviceRecords);
 router.get('/devices/:serialNumber/lastedRecord', getLastedDeviceRecords);
 router.delete('/devices/:serialNumber', deleteDevice);
+router.post('/devices/data/bulk', addMultipleDataRecords);
 
 export default router;

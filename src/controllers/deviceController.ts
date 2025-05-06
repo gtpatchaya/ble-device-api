@@ -87,6 +87,32 @@ export const addDataRecord = async (
   }
 };
 
+export const addMultipleDataRecords = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { serialNumber, records } = req.body;
+  try {
+    const device = await prisma.device.findUnique({ where: { serialNumber } });
+    if (!device) res.status(404).json({ message: 'Device not found' });
+
+    const createdRecords = await prisma.dataRecord.createMany({
+      data: records.map((record: any) => ({
+        deviceId: device?.id,
+        timestamp: new Date(record.timestamp),
+        value: record.value,
+        unit: record.unit,
+        recordNo: record.recordNo,
+      })),
+    });
+    
+    res.status(200).json(
+      successResponse(200, createdRecords.count ? 'Records added successfully' : 'No record added', createdRecords.count)
+    );
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // --------------------------------------------
 // 3. GET DEVICES WITH PAGINATION
 // --------------------------------------------
@@ -227,3 +253,5 @@ export const getLastedDeviceRecords = async (
     next(error);
   }
 };
+
+
