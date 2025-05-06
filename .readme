@@ -1,3 +1,7 @@
+การ deploy
+- สร้างฐานข้อมูลชื่อ "ble"
+- เวลาที่ deploy ให้ build ที local เเล้วค่อยเอาขึ้นไป ที่ server , pull and deploy
+
 -- สร้างตาราง Device
 CREATE TABLE Device (
   id INT AUTO_INCREMENT PRIMARY KEY,

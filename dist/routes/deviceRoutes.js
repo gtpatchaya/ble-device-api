@@ -7,5 +7,6 @@ router.post('/devices/register', deviceController_1.registerDevice);
 router.post('/devices/data', deviceController_1.addDataRecord);
 router.get('/devices', deviceController_1.getDevices);
 router.get('/devices/:serialNumber/records', deviceController_1.getDeviceRecords);
+router.get('/devices/:serialNumber/lastedRecord', deviceController_1.getLastedDeviceRecords);
 router.delete('/devices/:serialNumber', deviceController_1.deleteDevice);
 exports.default = router;
