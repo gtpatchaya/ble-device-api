@@ -94,22 +94,47 @@ export const addMultipleDataRecords = async (req: Request, res: Response, next: 
   const { serialNumber, records } = req.body;
   try {
     const device = await prisma.device.findUnique({ where: { serialNumber } });
-    if (!device) res.status(404).json({ message: 'Device not found' });
+    if (!device) {
+      res.status(404).json({ message: 'Device not found' });
+      return;
+    }
 
-    const createdRecords = await prisma.dataRecord.createMany({
-      data: records.map((record: any) => ({
-      deviceId: device?.id,
-      timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
-      value: record.value,
-      unit: record.unit.toString(),
-      recordNumber: record.recordNumber,
-      })),
+    // Fetch existing recordNumbers for the device
+    const existingRecords = await prisma.dataRecord.findMany({
+      where: { deviceId: device.id },
+      select: { recordNumber: true },
     });
-    
-    res.status(200).json(
-      successResponse(200, createdRecords.count ? 'Records added successfully' : 'No record added', createdRecords.count)
+
+    const existingRecordNumbers = new Set(existingRecords.map((record) => record.recordNumber));
+
+    // Filter out records with duplicate recordNumbers
+    const filteredRecords = records.filter(
+      (record: any) => !existingRecordNumbers.has(record.recordNumber)
     );
 
+    if (filteredRecords.length === 0) {
+      res.status(200).json(successResponse(200, 'No new records to add', 0));
+      return;
+    }
+
+    // Insert filtered records
+    const createdRecords = await prisma.dataRecord.createMany({
+      data: filteredRecords.map((record: any) => ({
+        deviceId: device.id,
+        timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
+        value: record.value,
+        unit: record.unit.toString(),
+        recordNumber: record.recordNumber,
+      })),
+    });
+
+    res.status(200).json(
+      successResponse(
+        200,
+        createdRecords.count ? 'Records added successfully' : 'No record added',
+        createdRecords.count
+      )
+    );
   } catch (error) {
     next(error);
   }
