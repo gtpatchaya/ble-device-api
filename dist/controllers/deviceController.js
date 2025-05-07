@@ -75,11 +75,26 @@ const addMultipleDataRecords = (req, res, next) => __awaiter(void 0, void 0, voi
     const { serialNumber, records } = req.body;
     try {
         const device = yield prismaClient_1.default.device.findUnique({ where: { serialNumber } });
-        if (!device)
+        if (!device) {
             res.status(404).json({ message: 'Device not found' });
+            return;
+        }
+        // Fetch existing recordNumbers for the device
+        const existingRecords = yield prismaClient_1.default.dataRecord.findMany({
+            where: { deviceId: device.id },
+            select: { recordNumber: true },
+        });
+        const existingRecordNumbers = new Set(existingRecords.map((record) => record.recordNumber));
+        // Filter out records with duplicate recordNumbers
+        const filteredRecords = records.filter((record) => !existingRecordNumbers.has(record.recordNumber));
+        if (filteredRecords.length === 0) {
+            res.status(200).json((0, response_1.successResponse)(200, 'No new records to add', 0));
+            return;
+        }
+        // Insert filtered records
         const createdRecords = yield prismaClient_1.default.dataRecord.createMany({
-            data: records.map((record) => ({
-                deviceId: device === null || device === void 0 ? void 0 : device.id,
+            data: filteredRecords.map((record) => ({
+                deviceId: device.id,
                 timestamp: new Date(record.timestamp).toISOString(), // Ensure UTC 0
                 value: record.value,
                 unit: record.unit.toString(),
