@@ -99,17 +99,21 @@ export const addMultipleDataRecords = async (req: Request, res: Response, next: 
       return;
     }
 
-    // Fetch existing recordNumbers for the device
+    // Fetch existing recordNumbers and timestamps for the device
     const existingRecords = await prisma.dataRecord.findMany({
       where: { deviceId: device.id },
-      select: { recordNumber: true },
+      select: { recordNumber: true, timestamp: true },
     });
 
-    const existingRecordNumbers = new Set(existingRecords.map((record) => record.recordNumber));
+    const existingRecordMap = new Map(
+      existingRecords.map((record) => [record.recordNumber, record.timestamp.toISOString()])
+    );
 
-    // Filter out records with duplicate recordNumbers
+    // Filter out records with duplicate recordNumbers or identical timestamps
     const filteredRecords = records.filter(
-      (record: any) => !existingRecordNumbers.has(record.recordNumber)
+      (record: any) =>
+        !existingRecordMap.has(record.recordNumber) &&
+        !Array.from(existingRecordMap.values()).includes(new Date(record.timestamp).toISOString())
     );
 
     if (filteredRecords.length === 0) {
@@ -232,7 +236,11 @@ export const getDeviceRecords = async (
 
     const device = await prisma.device.findUnique({
       where: { serialNumber },
-      include: { dataRecords: true },
+      include: {
+        dataRecords: {
+          orderBy: { timestamp: 'desc' },
+        },
+      },
     });
 
     if (!device) {
@@ -242,7 +250,6 @@ export const getDeviceRecords = async (
 
     res.status(200).json(successResponse(200, 'Success', device.dataRecords));
   } catch (error) {
-    res.status(404).json(successResponse(404, 'Internal xx Error', error));
     next(error);
   }
 };
