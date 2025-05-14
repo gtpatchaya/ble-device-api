@@ -3,6 +3,7 @@
 - เวลาที่ deploy ให้ build ที local เเล้วค่อยเอาขึ้นไป ที่ server , pull and deploy
 - ตอนเปลี่ยน model จะต้อง sudo npx prisma generate เพื่อ update model
 - ตอนรัน npx ts-node-dev src/server.ts
+- ตอนที่ต้องการ update ให้ใช้ prisma db push --force-reset // อันนี้จะลบข้อมูลใน db ออกทั้งหมด
 
 -- สร้างตาราง Device
 CREATE TABLE Device (

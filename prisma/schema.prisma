@@ -15,6 +15,12 @@ model Device {
   registeredAt DateTime     @default(now())
   isActive     Boolean      @default(true)
   dataRecords  DataRecord[]
+  userId       String
+  User         User?        @relation(name: "UserDevices", fields: [userId], references: [id])
+
+  currentValue Float?
+  currentUnit  String?
+  currentAt    DateTime?
 }
 
 model DataRecord {
@@ -25,4 +31,17 @@ model DataRecord {
   value        Float
   unit         String
   recordNumber Int
+  serialNumber String   @default("")
+  rawData      String   @default("")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  devices   Device[]  @relation(name: "UserDevices")
+  provider  String    @default("local")
 }

@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const device_controller_1 = require("../controllers/device.controller");
+const dataRecord_controller_1 = require("../controllers/dataRecord.controller");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticateToken);
+router.post('/register', device_controller_1.createDevice);
+router.get('/', device_controller_1.getPaginatedDevices);
+router.delete('/:serialNumber', device_controller_1.deleteDeviceBySerialNumber);
+router.post('/data', dataRecord_controller_1.addDataRecord);
+router.post('/data/bulk', dataRecord_controller_1.addMultipleDataRecords);
+router.get('/:serialNumber/records', device_controller_1.getLatestRecordBySerialNumber);
+router.get('/:serialNumber/lastedRecord', device_controller_1.getDeviceRecordsBySerialNumber);
+exports.default = router;
