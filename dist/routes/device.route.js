@@ -6,7 +6,7 @@ const dataRecord_controller_1 = require("../controllers/dataRecord.controller");
 const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
 router.use(auth_middleware_1.authenticateToken);
-router.post('/register', device_controller_1.createDevice);
+router.post('/register', device_controller_1.registerDevice);
 router.get('/', device_controller_1.getPaginatedDevices);
 router.delete('/:serialNumber', device_controller_1.deleteDeviceBySerialNumber);
 router.post('/data', dataRecord_controller_1.addDataRecord);

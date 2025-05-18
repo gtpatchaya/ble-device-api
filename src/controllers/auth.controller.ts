@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import prisma from '../prismaClient';
+import { cookieOptions } from '../utils/auth';
+import { successResponse } from '../utils/response';
 
 // Environment variables validation
 const requiredEnvs = {
@@ -32,7 +34,7 @@ export const generateTokens = (payload: TokenPayload): Tokens => {
   const accessToken = jwt.sign(
     payload,
     requiredEnvs.JWT_ACCESS_SECRET as string,
-    { expiresIn: '15m' }
+    { expiresIn: '10 Years' }
   );
 
   const refreshToken = jwt.sign(
@@ -44,20 +46,13 @@ export const generateTokens = (payload: TokenPayload): Tokens => {
   return { accessToken, refreshToken };
 };
 
-// Set secure cookie options
-const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
-
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     // Validate request body
-    const validatedData = loginSchema.parse(req.body);
-    const { email, password } = validatedData;
-
+    // const validatedData = loginSchema.parse(req.body);
+    const { email, password } = req.body;
+    console.log('Login request:', email);
+   
     // Find user
     const user = await prisma.user.findUnique({
       where: { email },
@@ -66,26 +61,19 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         email: true,
         password: true,
         name: true,
+        dateOfBirth: true,
       },
     });
 
     if (!user) {
-      res.status(401).json({
-        status: 'error',
-        message: 'Invalid credentials',
-      });
-      return;
+       res.status(401).json(successResponse(401, 'error', null));
+       return
     }
 
-    console.log(user.password);
-    console.log(password);
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      res.status(401).json({
-        status: 'error',
-        message: 'Invalid credentials',
-      });
+      res.status(401).json(successResponse(401, 'error', 'รหัสผ่านผิด'));
       return;
     }
 
@@ -99,23 +87,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.cookie('refreshToken', tokens.refreshToken, cookieOptions);
 
     // Return success response with access token and user data
-    res.status(200).json({
-      status: 'success',
-      data: {
-        accessToken: tokens.accessToken,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        },
+    res.status(200).json(successResponse(200, 'success', {
+      accessToken: tokens.accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        dateOfBirth: user.dateOfBirth,
       },
-    });
+    }));
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({
         status: 'error',
         message: 'Validation failed',
-        errors: error.errors,
+        errors: error.message,
       });
       return;
     }

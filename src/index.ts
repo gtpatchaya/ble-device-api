@@ -8,6 +8,7 @@ import './config/passport'; // Import passport config
 import authRoutes from './routes/auth.route';
 import deviceRoutes from './routes/device.route';
 import deviceUserRoutes from './routes/deviceUserRoutes';
+import stockDeviceRoutes from './routes/stockDevice.route';
 import userRoutes from './routes/user.route';
 
 const app = express();
@@ -17,17 +18,19 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: '*',
   credentials: true,
 }));
 
-// Initialize Passport
+// Initialize 
 app.use(passport.initialize());
 
 // Routes
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/device', deviceRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/device-user', deviceUserRoutes);
+app.use('/api/v1/stock-device', stockDeviceRoutes);
 
 export default app;

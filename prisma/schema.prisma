@@ -8,10 +8,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model StockDevice {
+  id           Int      @id @default(autoincrement())
+  deviceId     String   @unique
+  serialNumber String   @unique
+  createdAt    DateTime @default(now())
+  lotNo        String
+  companyName  String
+}
+
 model Device {
   id           Int          @id @default(autoincrement())
-  serialNumber String       @unique
+  deviceId     String       @unique
+  serialNumber String?      @unique
   model        String
+  name         String       @default("")
   registeredAt DateTime     @default(now())
   isActive     Boolean      @default(true)
   dataRecords  DataRecord[]
@@ -36,12 +47,15 @@ model DataRecord {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  name      String
-  email     String    @unique
-  password  String
-  createdAt DateTime  @default(now())
-  deletedAt DateTime?
-  devices   Device[]  @relation(name: "UserDevices")
-  provider  String    @default("local")
+  id          String    @id @default(uuid())
+  name        String
+  email       String    @unique
+  password    String
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+  devices     Device[]  @relation(name: "UserDevices")
+  provider    String    @default("local")
+  dateOfBirth DateTime?
+  username    String?
+  lastName    String?
 }

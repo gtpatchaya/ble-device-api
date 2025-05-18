@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../prismaClient';
+import { errorResponse, successResponse } from '../utils/response';
 
 export const assignDeviceToUser = async (req: Request, res: Response) => {
   try {
@@ -7,7 +8,7 @@ export const assignDeviceToUser = async (req: Request, res: Response) => {
 
     // Check if device exists
     const device = await prisma.device.findUnique({
-      where: { id: deviceId },
+      where: { deviceId: deviceId },
       include: { User: true }
     });
 
@@ -31,12 +32,12 @@ export const assignDeviceToUser = async (req: Request, res: Response) => {
 
     // Assign device to user
     const updatedDevice = await prisma.device.update({
-      where: { id: deviceId },
+      where: { deviceId: deviceId },
       data: { userId },
       include: { User: true }
     });
 
-    res.json(updatedDevice);
+    res.status(200).json(successResponse(200, 'Success', updatedDevice));
   } catch (error) {
     console.error('Error assigning device to user:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -69,7 +70,7 @@ export const unassignDevice = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserDevices = async (req: Request, res: Response) => {
+export const getDevicesByUserId = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
@@ -79,7 +80,7 @@ export const getUserDevices = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(200).json(successResponse(200, 'Success', []));
     }
 
     // Get all devices for the user
@@ -88,27 +89,29 @@ export const getUserDevices = async (req: Request, res: Response) => {
       include: { User: true }
     });
 
-    res.json(devices);
+
+    return res.status(200).json(successResponse(200, 'Success', devices));
   } catch (error) {
     console.error('Error getting user devices:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json(errorResponse(500, 'Success'));
   }
 };
 
-export const getDeviceUser = async (req: Request, res: Response) => {
+export const getUserByDeviceId = async (req: Request, res: Response) => {
   try {
     const { deviceId } = req.params;
 
     const device = await prisma.device.findUnique({
-      where: { id: Number(deviceId) },
+      where: { deviceId: deviceId },
       include: { User: true }
     });
 
-    if (!device) {
-      return res.status(404).json({ error: 'Device not found' });
+    if (!device || !device.User) {
+      res.status(200).json(successResponse(200, 'Success', null));
+      return
     }
-
-    res.json(device.User);
+   
+    res.status(200).json(successResponse(200, 'Success', device.User));
   } catch (error) {
     console.error('Error getting device user:', error);
     res.status(500).json({ error: 'Internal server error' });

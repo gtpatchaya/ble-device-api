@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDeviceUser = exports.getUserDevices = exports.unassignDevice = exports.assignDeviceToUser = void 0;
+exports.getUsersByDeviceId = exports.getDevicesByUserId = exports.unassignDevice = exports.assignDeviceToUser = void 0;
 const prismaClient_1 = __importDefault(require("../prismaClient"));
 const assignDeviceToUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -73,7 +73,7 @@ const unassignDevice = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.unassignDevice = unassignDevice;
-const getUserDevices = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getDevicesByUserId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userId } = req.params;
         // Check if user exists
@@ -95,8 +95,8 @@ const getUserDevices = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-exports.getUserDevices = getUserDevices;
-const getDeviceUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getDevicesByUserId = getDevicesByUserId;
+const getUsersByDeviceId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { deviceId } = req.params;
         const device = yield prismaClient_1.default.device.findUnique({
@@ -113,4 +113,4 @@ const getDeviceUser = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-exports.getDeviceUser = getDeviceUser;
+exports.getUsersByDeviceId = getUsersByDeviceId;

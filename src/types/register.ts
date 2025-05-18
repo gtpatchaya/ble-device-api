@@ -1,5 +1,6 @@
 export interface RegisterDeviceBody {
   serialNumber: string;
+  name: string;
   model: string;
   firmwareVersion?: string;
   hardwareVersion?: string;
@@ -9,6 +10,8 @@ export interface RegisterDeviceBody {
   unitId?: number;
   languageId?: number;
   testModeId?: number;
+  deviceId: string;
+  userId: string;
   location?: {
     lat: number;
     lng: number;

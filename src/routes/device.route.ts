@@ -1,10 +1,14 @@
 import { Router } from 'express';
 import {
-  createDevice,
   deleteDeviceBySerialNumber,
   getDeviceRecordsBySerialNumber,
   getLatestRecordBySerialNumber,
-  getPaginatedDevices
+  getPaginatedDevices,
+  registerDevice,
+  updateDeviceLastValue,
+  updateDeviceName,
+  updateDeviceSerialNumber,
+  updateDeviceUnit
 } from '../controllers/device.controller';
 
 import {
@@ -17,13 +21,18 @@ const router = Router();
 
 router.use(authenticateToken);
 
-router.post('/register', createDevice);
+router.post('/register', registerDevice);
 router.get('/', getPaginatedDevices);
 router.delete('/:serialNumber', deleteDeviceBySerialNumber);
 
 router.post('/data', addDataRecord);
 router.post('/data/bulk', addMultipleDataRecords);
-router.get('/:serialNumber/records', getLatestRecordBySerialNumber);
-router.get('/:serialNumber/lastedRecord', getDeviceRecordsBySerialNumber);
+router.get('/:serialNumber/records',getDeviceRecordsBySerialNumber );
+router.get('/:serialNumber/lastedRecord', getLatestRecordBySerialNumber);
+
+router.post('/updateName/:deviceId', updateDeviceName);
+router.post('/updateSerialNumber/:deviceId', updateDeviceSerialNumber);
+router.post('/updateLastValue/:deviceId', updateDeviceLastValue);
+router.post('/updateDeviceUnit/:deviceId', updateDeviceUnit);
 
 export default router;

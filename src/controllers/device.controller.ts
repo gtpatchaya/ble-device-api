@@ -3,25 +3,25 @@ import prisma from '../prismaClient';
 import { PaginatedResult } from '../types/api';
 import { SerialNumberParams } from '../types/device.type';
 import { RegisterDeviceBody } from '../types/register';
-import { successResponse } from '../utils/response';
+import { errorResponse, successResponse } from '../utils/response';
 
-export const createDevice = async (
+export const registerDevice = async (
   req: Request<{}, {}, RegisterDeviceBody>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { serialNumber, model } = req.body;
+    const { serialNumber, model, deviceId, userId, name } = req.body;
 
-    const existing = await prisma.device.findUnique({ where: { serialNumber } });
+    const existing = await prisma.device.findUnique({ where: { deviceId } });
     if (existing) {
-      res.status(400).json(successResponse(400, 'Device already registered', null));
+      res.status(200).json(successResponse(200, 'Device already registered', null));
       return;
     }
 
-    const device = await prisma.device.create({ data: { serialNumber, model } });
+    const device = await prisma.device.create({ data: { serialNumber, model,deviceId, userId, name} });
 
-    res.status(201).json(successResponse(201, 'Device registered successfully', device));
+    res.status(200).json(successResponse(200, 'Device registered successfully', device));
   } catch (error) {
     next(error);
   }
@@ -139,5 +139,103 @@ export const getLatestRecordBySerialNumber = async (
     next(error);
   }
 };
+
+export const updateDeviceName = async (req: Request<{ deviceId: string }, {}, { name?: string }>, res: Response) => {
+  try {
+    const { deviceId } = req.params;
+    const { name } = req.body;
+
+    if (!name) {
+       res.status(400).json(errorResponse(400, 'Name is required'));
+       return
+    }
+
+    const updated = await prisma.device.update({
+      where: { deviceId },
+      data: { name },
+    });
+
+    res.status(200).json(successResponse(200, 'Device name updated', updated));
+  } catch (error) {
+    console.error('Error updating device name:', error);
+    res.status(500).json(errorResponse(500, 'Internal server error'));
+  }
+};
+
+export const updateDeviceSerialNumber = async (req: Request<{ deviceId: string }, {}, { serialNumber?: string }>, res: Response) => {
+  try {
+    const { deviceId } = req.params;
+    const { serialNumber } = req.body;
+
+    if (!serialNumber) {
+       res.status(400).json(errorResponse(400, 'Serial number is required'));
+       return
+    }
+
+    const updated = await prisma.device.update({
+      where: { deviceId },
+      data: { serialNumber },
+    });
+
+    res.status(200).json(successResponse(200, 'Serial number updated', updated));
+  } catch (error) {
+    console.error('Error updating serial number:', error);
+    res.status(500).json(errorResponse(500, 'Internal server error'));
+  }
+};
+
+export const updateDeviceLastValue = async (req: Request<{ deviceId: string }, {}, { value?: number }>, res: Response) => {
+  try {
+    const { deviceId } = req.params;
+    const { value } = req.body;
+
+    if (value === null || value === undefined) {
+       res.status(400).json(errorResponse(400, 'Value is required'));
+       return
+    }
+
+    const updated = await prisma.device.update({
+      where: { deviceId },
+      data: {
+        currentValue: value,
+        currentAt: new Date(), // บันทึกเวลาอัปเดต
+      },
+    });
+
+    res.status(200).json(successResponse(200, 'Last value updated', updated));
+  } catch (error) {
+    console.error('Error updating last value:', error);
+    res.status(500).json(errorResponse(500, 'Internal server error'));
+  }
+};
+
+
+export const updateDeviceUnit = async (req: Request<{ deviceId: string }, {}, { unit?: string }>, res: Response) => {
+  try {
+    const { deviceId } = req.params;
+    const { unit } = req.body;
+
+    if (unit === null || unit === undefined) {
+       res.status(400).json(errorResponse(400, 'unit is required'));
+       return
+    }
+
+    const updated = await prisma.device.update({
+      where: { deviceId },
+      data: {
+        currentUnit: unit,
+        currentAt: new Date(), // บันทึกเวลาอัปเดต
+      },
+    });
+
+    res.status(200).json(successResponse(200, 'Last value updated', updated));
+  } catch (error) {
+    console.error('Error updating last value:', error);
+    res.status(500).json(errorResponse(500, 'Internal server error'));
+  }
+};
+
+
+
 
 

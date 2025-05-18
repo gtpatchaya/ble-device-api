@@ -12,10 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLatestRecordBySerialNumber = exports.getDeviceRecordsBySerialNumber = exports.deleteDeviceBySerialNumber = exports.getPaginatedDevices = exports.createDevice = void 0;
+exports.getLatestRecordBySerialNumber = exports.getDeviceRecordsBySerialNumber = exports.deleteDeviceBySerialNumber = exports.getPaginatedDevices = exports.registerDevice = void 0;
 const prismaClient_1 = __importDefault(require("../prismaClient"));
 const response_1 = require("../utils/response");
-const createDevice = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const registerDevice = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { serialNumber, model } = req.body;
         const existing = yield prismaClient_1.default.device.findUnique({ where: { serialNumber } });
@@ -30,7 +30,7 @@ const createDevice = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         next(error);
     }
 });
-exports.createDevice = createDevice;
+exports.registerDevice = registerDevice;
 const getPaginatedDevices = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const page = parseInt(req.query.page) || 1;

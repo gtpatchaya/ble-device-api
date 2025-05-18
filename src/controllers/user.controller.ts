@@ -1,19 +1,48 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import prisma from '../prismaClient';
-import { successResponse } from '../utils/response';
+import { cookieOptions } from '../utils/auth';
+import { errorResponse, successResponse } from '../utils/response';
+import { generateTokens } from './auth.controller';
 
 export const userController = {
   create: async (req: Request, res: Response): Promise<void> => {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, dateOfBirth } = req.body;
+
+      // Check if email already exists
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        res.status(400).json(errorResponse(400, 'อีเมลนี้มีผู้ลงทะเบียนไปแล้ว'));
+        return;
+      }
+
       const hashedPassword = await bcrypt.hash(password, 10);
+      const temp = new Date(dateOfBirth);
+
       const user = await prisma.user.create({
-        data: { name, email, password: hashedPassword },
+        data: { name, email, password: hashedPassword , dateOfBirth: temp },
       });
-      res.status(201).json(successResponse(201, 'User created', user));
-    } catch (error) {
-      res.status(500).json({ error: 'Error creating user' });
+
+      // Generate tokens
+      const tokens = generateTokens({
+        userId: user.id,
+        email: user.email,
+      });
+
+      // Set refresh token in HTTP-only cookie
+      res.cookie('refreshToken', tokens.refreshToken, cookieOptions);
+
+      res.status(201).json(successResponse(201, 'User created', {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+        accessToken: tokens.accessToken,
+      }));
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message });
     }
   },
 

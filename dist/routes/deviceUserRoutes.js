@@ -10,7 +10,7 @@ router.post('/assign', deviceUser_controller_1.assignDeviceToUser);
 // Unassign a device from its current user
 router.delete('/unassign/:deviceId', deviceUser_controller_1.unassignDevice);
 // Get all devices for a specific user
-router.get('/user/:userId/devices', deviceUser_controller_1.getUserDevices);
+router.get('/user/:userId/devices', deviceUser_controller_1.getDevicesByUserId);
 // Get the user assigned to a specific device
-router.get('/device/:deviceId/user', deviceUser_controller_1.getDeviceUser);
+router.get('/device/:deviceId/user', deviceUser_controller_1.getUsersByDeviceId);
 exports.default = router;
