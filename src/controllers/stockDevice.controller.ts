@@ -52,7 +52,6 @@ export const getStockDeviceBySerialNumber = async (
 ): Promise<void> => {
   try {
     const { serialNumber } = req.params;
-
     const stockDevice = await prisma.stockDevice.findUnique({
       where: { serialNumber },
     });
