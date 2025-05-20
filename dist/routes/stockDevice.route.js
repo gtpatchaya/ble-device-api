@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const stockDevice_controller_1 = require("../controllers/stockDevice.controller");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticateToken);
+router.post('/', stockDevice_controller_1.createStockDevice);
+router.get('/', stockDevice_controller_1.getAllStockDevices);
+router.get('/:serialNumber', stockDevice_controller_1.getStockDeviceBySerialNumber);
+router.get('/device/:deviceId', stockDevice_controller_1.getStockDeviceByDeviceId);
+router.delete('/:serialNumber', stockDevice_controller_1.deleteStockDevice);
+router.put('/:serialNumber', stockDevice_controller_1.updateStockDevice);
+exports.default = router;

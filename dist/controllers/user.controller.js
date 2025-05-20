@@ -15,19 +15,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userController = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const prismaClient_1 = __importDefault(require("../prismaClient"));
+const auth_1 = require("../utils/auth");
 const response_1 = require("../utils/response");
+const auth_controller_1 = require("./auth.controller");
 exports.userController = {
     create: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const { name, email, password } = req.body;
+            const { name, email, password, dateOfBirth } = req.body;
+            // Check if email already exists
+            const existingUser = yield prismaClient_1.default.user.findUnique({ where: { email } });
+            if (existingUser) {
+                res.status(400).json((0, response_1.errorResponse)(400, 'อีเมลนี้มีผู้ลงทะเบียนไปแล้ว'));
+                return;
+            }
             const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+            const temp = new Date(dateOfBirth);
             const user = yield prismaClient_1.default.user.create({
-                data: { name, email, password: hashedPassword },
+                data: { name, email, password: hashedPassword, dateOfBirth: temp },
             });
-            res.status(201).json((0, response_1.successResponse)(201, 'User created', user));
+            // Generate tokens
+            const tokens = (0, auth_controller_1.generateTokens)({
+                userId: user.id,
+                email: user.email,
+            });
+            // Set refresh token in HTTP-only cookie
+            res.cookie('refreshToken', tokens.refreshToken, auth_1.cookieOptions);
+            res.status(201).json((0, response_1.successResponse)(201, 'User created', {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                },
+                accessToken: tokens.accessToken,
+            }));
         }
         catch (error) {
-            res.status(500).json({ error: 'Error creating user' });
+            res.status(500).json({ error: error === null || error === void 0 ? void 0 : error.message });
         }
     }),
     getAll: (req, res) => __awaiter(void 0, void 0, void 0, function* () {

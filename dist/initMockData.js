@@ -24,6 +24,15 @@ const initMockData = () => __awaiter(void 0, void 0, void 0, function* () {
     if (!existingUser) {
         // Hash password before saving
         const hashedPassword = yield bcryptjs_1.default.hash('securepassword123', SALT_ROUNDS);
+        yield prismaClient_1.default.stockDevice.create({
+            data: {
+                deviceId: 'D-MOCK-DEVICE-001',
+                serialNumber: 'MOCK-DEVICE-001',
+                createdAt: new Date(),
+                lotNo: 'LOT-001',
+                companyName: 'Mock Company',
+            },
+        });
         const user = yield prismaClient_1.default.user.create({
             data: {
                 name: 'Mock User',
@@ -34,12 +43,14 @@ const initMockData = () => __awaiter(void 0, void 0, void 0, function* () {
         yield prismaClient_1.default.device.create({
             data: {
                 serialNumber: 'MOCK-DEVICE-001',
+                name: 'Mock Device',
                 model: 'X200',
                 userId: user.id,
                 isActive: true,
                 currentValue: 0.01,
                 currentUnit: 'mg/L',
                 currentAt: new Date(),
+                deviceId: 'MOCK-DEVICE-001',
             },
         });
         console.log('✅ Mock user and device created');

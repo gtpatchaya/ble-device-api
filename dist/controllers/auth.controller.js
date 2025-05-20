@@ -17,6 +17,8 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_1 = require("zod");
 const prismaClient_1 = __importDefault(require("../prismaClient"));
+const auth_1 = require("../utils/auth");
+const response_1 = require("../utils/response");
 // Environment variables validation
 const requiredEnvs = {
     JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
@@ -29,23 +31,17 @@ const loginSchema = zod_1.z.object({
 });
 // Generate JWT tokens
 const generateTokens = (payload) => {
-    const accessToken = jsonwebtoken_1.default.sign(payload, requiredEnvs.JWT_ACCESS_SECRET, { expiresIn: '15m' });
+    const accessToken = jsonwebtoken_1.default.sign(payload, requiredEnvs.JWT_ACCESS_SECRET, { expiresIn: '10 Years' });
     const refreshToken = jsonwebtoken_1.default.sign(payload, requiredEnvs.JWT_REFRESH_SECRET, { expiresIn: '7d' });
     return { accessToken, refreshToken };
 };
 exports.generateTokens = generateTokens;
-// Set secure cookie options
-const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Validate request body
-        const validatedData = loginSchema.parse(req.body);
-        const { email, password } = validatedData;
+        // const validatedData = loginSchema.parse(req.body);
+        const { email, password } = req.body;
+        console.log('Login request:', email);
         // Find user
         const user = yield prismaClient_1.default.user.findUnique({
             where: { email },
@@ -54,24 +50,17 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 email: true,
                 password: true,
                 name: true,
+                dateOfBirth: true,
             },
         });
         if (!user) {
-            res.status(401).json({
-                status: 'error',
-                message: 'Invalid credentials',
-            });
+            res.status(401).json((0, response_1.successResponse)(401, 'error', null));
             return;
         }
-        console.log(user.password);
-        console.log(password);
         // Verify password
         const isValidPassword = yield bcryptjs_1.default.compare(password, user.password);
         if (!isValidPassword) {
-            res.status(401).json({
-                status: 'error',
-                message: 'Invalid credentials',
-            });
+            res.status(401).json((0, response_1.successResponse)(401, 'error', 'รหัสผ่านผิด'));
             return;
         }
         // Generate tokens
@@ -80,26 +69,24 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             email: user.email,
         });
         // Set refresh token in HTTP-only cookie
-        res.cookie('refreshToken', tokens.refreshToken, cookieOptions);
+        res.cookie('refreshToken', tokens.refreshToken, auth_1.cookieOptions);
         // Return success response with access token and user data
-        res.status(200).json({
-            status: 'success',
-            data: {
-                accessToken: tokens.accessToken,
-                user: {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                },
+        res.status(200).json((0, response_1.successResponse)(200, 'success', {
+            accessToken: tokens.accessToken,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                dateOfBirth: user.dateOfBirth,
             },
-        });
+        }));
     }
     catch (error) {
         if (error instanceof zod_1.z.ZodError) {
             res.status(400).json({
                 status: 'error',
                 message: 'Validation failed',
-                errors: error.errors,
+                errors: error.message,
             });
             return;
         }
@@ -129,7 +116,7 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             email: decoded.email,
         });
         // Set new refresh token
-        res.cookie('refreshToken', tokens.refreshToken, cookieOptions);
+        res.cookie('refreshToken', tokens.refreshToken, auth_1.cookieOptions);
         res.status(200).json({
             status: 'success',
             data: {
@@ -155,7 +142,7 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.refreshToken = refreshToken;
 const logout = (req, res) => {
     // Clear refresh token cookie
-    res.clearCookie('refreshToken', cookieOptions);
+    res.clearCookie('refreshToken', auth_1.cookieOptions);
     res.status(200).json({
         status: 'success',
         message: 'Logged out successfully',

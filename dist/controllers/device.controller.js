@@ -12,19 +12,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLatestRecordBySerialNumber = exports.getDeviceRecordsBySerialNumber = exports.deleteDeviceBySerialNumber = exports.getPaginatedDevices = exports.registerDevice = void 0;
+exports.updateDeviceUnit = exports.updateDeviceLastValue = exports.updateDeviceSerialNumber = exports.updateDeviceName = exports.getLatestRecordBySerialNumber = exports.getDeviceRecordsBySerialNumber = exports.deleteDeviceBySerialNumber = exports.getPaginatedDevices = exports.registerDevice = void 0;
 const prismaClient_1 = __importDefault(require("../prismaClient"));
 const response_1 = require("../utils/response");
 const registerDevice = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { serialNumber, model } = req.body;
-        const existing = yield prismaClient_1.default.device.findUnique({ where: { serialNumber } });
+        const { serialNumber, model, deviceId, userId, name } = req.body;
+        const existing = yield prismaClient_1.default.device.findUnique({ where: { deviceId } });
         if (existing) {
-            res.status(400).json((0, response_1.successResponse)(400, 'Device already registered', null));
+            res.status(200).json((0, response_1.successResponse)(200, 'Device already registered', null));
             return;
         }
-        const device = yield prismaClient_1.default.device.create({ data: { serialNumber, model } });
-        res.status(201).json((0, response_1.successResponse)(201, 'Device registered successfully', device));
+        const device = yield prismaClient_1.default.device.create({ data: { serialNumber, model, deviceId, userId, name } });
+        res.status(200).json((0, response_1.successResponse)(200, 'Device registered successfully', device));
     }
     catch (error) {
         next(error);
@@ -115,3 +115,89 @@ const getLatestRecordBySerialNumber = (req, res, next) => __awaiter(void 0, void
     }
 });
 exports.getLatestRecordBySerialNumber = getLatestRecordBySerialNumber;
+const updateDeviceName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { deviceId } = req.params;
+        const { name } = req.body;
+        if (!name) {
+            res.status(400).json((0, response_1.errorResponse)(400, 'Name is required'));
+            return;
+        }
+        const updated = yield prismaClient_1.default.device.update({
+            where: { deviceId },
+            data: { name },
+        });
+        res.status(200).json((0, response_1.successResponse)(200, 'Device name updated', updated));
+    }
+    catch (error) {
+        console.error('Error updating device name:', error);
+        res.status(500).json((0, response_1.errorResponse)(500, 'Internal server error'));
+    }
+});
+exports.updateDeviceName = updateDeviceName;
+const updateDeviceSerialNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { deviceId } = req.params;
+        const { serialNumber } = req.body;
+        if (!serialNumber) {
+            res.status(400).json((0, response_1.errorResponse)(400, 'Serial number is required'));
+            return;
+        }
+        const updated = yield prismaClient_1.default.device.update({
+            where: { deviceId },
+            data: { serialNumber },
+        });
+        res.status(200).json((0, response_1.successResponse)(200, 'Serial number updated', updated));
+    }
+    catch (error) {
+        console.error('Error updating serial number:', error);
+        res.status(500).json((0, response_1.errorResponse)(500, 'Internal server error'));
+    }
+});
+exports.updateDeviceSerialNumber = updateDeviceSerialNumber;
+const updateDeviceLastValue = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { deviceId } = req.params;
+        const { value } = req.body;
+        if (value === null || value === undefined) {
+            res.status(400).json((0, response_1.errorResponse)(400, 'Value is required'));
+            return;
+        }
+        const updated = yield prismaClient_1.default.device.update({
+            where: { deviceId },
+            data: {
+                currentValue: value,
+                currentAt: new Date(), // บันทึกเวลาอัปเดต
+            },
+        });
+        res.status(200).json((0, response_1.successResponse)(200, 'Last value updated', updated));
+    }
+    catch (error) {
+        console.error('Error updating last value:', error);
+        res.status(500).json((0, response_1.errorResponse)(500, 'Internal server error'));
+    }
+});
+exports.updateDeviceLastValue = updateDeviceLastValue;
+const updateDeviceUnit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { deviceId } = req.params;
+        const { unit } = req.body;
+        if (unit === null || unit === undefined) {
+            res.status(400).json((0, response_1.errorResponse)(400, 'unit is required'));
+            return;
+        }
+        const updated = yield prismaClient_1.default.device.update({
+            where: { deviceId },
+            data: {
+                currentUnit: unit,
+                currentAt: new Date(), // บันทึกเวลาอัปเดต
+            },
+        });
+        res.status(200).json((0, response_1.successResponse)(200, 'Last value updated', updated));
+    }
+    catch (error) {
+        console.error('Error updating last value:', error);
+        res.status(500).json((0, response_1.errorResponse)(500, 'Internal server error'));
+    }
+});
+exports.updateDeviceUnit = updateDeviceUnit;

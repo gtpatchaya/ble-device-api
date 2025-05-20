@@ -12,14 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUsersByDeviceId = exports.getDevicesByUserId = exports.unassignDevice = exports.assignDeviceToUser = void 0;
+exports.getUserByDeviceId = exports.getDevicesByUserId = exports.unassignDevice = exports.assignDeviceToUser = void 0;
 const prismaClient_1 = __importDefault(require("../prismaClient"));
+const response_1 = require("../utils/response");
 const assignDeviceToUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { deviceId, userId } = req.body;
         // Check if device exists
         const device = yield prismaClient_1.default.device.findUnique({
-            where: { id: deviceId },
+            where: { deviceId: deviceId },
             include: { User: true }
         });
         if (!device) {
@@ -38,11 +39,11 @@ const assignDeviceToUser = (req, res) => __awaiter(void 0, void 0, void 0, funct
         }
         // Assign device to user
         const updatedDevice = yield prismaClient_1.default.device.update({
-            where: { id: deviceId },
+            where: { deviceId: deviceId },
             data: { userId },
             include: { User: true }
         });
-        res.json(updatedDevice);
+        res.status(200).json((0, response_1.successResponse)(200, 'Success', updatedDevice));
     }
     catch (error) {
         console.error('Error assigning device to user:', error);
@@ -81,36 +82,37 @@ const getDevicesByUserId = (req, res) => __awaiter(void 0, void 0, void 0, funct
             where: { id: userId }
         });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(200).json((0, response_1.successResponse)(200, 'Success', []));
         }
         // Get all devices for the user
         const devices = yield prismaClient_1.default.device.findMany({
             where: { userId },
             include: { User: true }
         });
-        res.json(devices);
+        return res.status(200).json((0, response_1.successResponse)(200, 'Success', devices));
     }
     catch (error) {
         console.error('Error getting user devices:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json((0, response_1.errorResponse)(500, 'Success'));
     }
 });
 exports.getDevicesByUserId = getDevicesByUserId;
-const getUsersByDeviceId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getUserByDeviceId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { deviceId } = req.params;
         const device = yield prismaClient_1.default.device.findUnique({
-            where: { id: Number(deviceId) },
+            where: { deviceId: deviceId },
             include: { User: true }
         });
-        if (!device) {
-            return res.status(404).json({ error: 'Device not found' });
+        if (!device || !device.User) {
+            res.status(200).json((0, response_1.successResponse)(200, 'Success', null));
+            return;
         }
-        res.json(device.User);
+        res.status(200).json((0, response_1.successResponse)(200, 'Success', device.User));
     }
     catch (error) {
         console.error('Error getting device user:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-exports.getUsersByDeviceId = getUsersByDeviceId;
+exports.getUserByDeviceId = getUserByDeviceId;
